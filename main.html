@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" ng-app="app">
+<head>
+  <meta charset="UTF-8">
+  <title>Angular Board</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <!-- AngularJS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <!-- Your AngularJS Controller -->
+  <script src="./app.js"></script>
+</head>
+<body>
+  <div ng-controller="PostController as postCtrl">
+    <h1>Angular Board</h1>
+    <table class="table table-hover custom-table">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>날짜</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="post in postCtrl.paginatedPosts" ng-click="postCtrl.handlePostClick(post)">
+                <td>{{ post.id }}</td>
+                <td>{{ post.title }}</td>
+                <td>{{ post.author }}</td>
+                <td>{{ postCtrl.formatDate(post.date) }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <button ng-click="postCtrl.prevPage()" ng-disabled="postCtrl.currentPage <= 10">이전</button>
+    <button ng-repeat="pageNumber in postCtrl.visiblePageNumbers" ng-click="postCtrl.goToPage(pageNumber)" ng-class="{ active: postCtrl.currentPage === pageNumber }">{{ pageNumber }}</button>
+    <button ng-click="postCtrl.nextPage()" ng-disabled="postCtrl.currentPage === postCtrl.totalPages">다음</button>
+    <button ng-click="postCtrl.navigate()">글 쓰기</button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<div ng-if="showModal" class="modal d-flex align-items-center justify-content-center" tabindex="-1" style="display: block">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{editingMode ? editedPost.title : post.title}}</h5>
+          <button type="button" class="btn-close" ng-click="closeModal()"></button>
+        </div>
+        <div ng-if="!editingMode" class="modal-body">
+          <p>작성자: {{post.author}}</p>
+          <p>날짜: {{formatDate(post.date)}}</p>
+          <p>내용: {{post.context}}</p>
+        </div>
+        <div ng-if="editingMode" class="modal-body">
+          <p>작성자: {{post.author}}</p>
+          <p>날짜: {{formatDate(post.date)}}</p>
+          <p>내용:</p>
+          <textarea ng-model="editedPost.context" class="form-control" placeholder="Content"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" ng-click="deletePost()">Delete</button>
+          <button ng-if="!editingMode" type="button" class="btn btn-primary" ng-click="toggleEditingMode()">Edit</button>
+          <button ng-if="editingMode" type="button" class="btn btn-success" ng-click="updatePost()">Save</button>
+          <button type="button" class="btn btn-secondary" ng-click="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
