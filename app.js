@@ -1,4 +1,22 @@
-angular.module('app', [])
+angular.module('app', ['ngRoute'])
+
+.config(['$routeProvider', function($routeProvider) {
+    $routeProvider
+    .when('/', {
+        templateUrl: 'main.html',
+        controller: 'PostController',
+        controllerAs: 'postCtrl'
+    })
+    .when('/post/:id', {
+        templateUrl: 'postdetail.html',
+        controller: 'PostDetailController',
+        controllerAs: 'postDetailCtrl'
+    })
+    .otherwise({
+        redirectTo: '/'
+    });
+}])
+  
 .controller('PostController', ['$http', '$location', function($http, $location) {
     var vm = this;
 
@@ -22,8 +40,7 @@ angular.module('app', [])
     };
 
     vm.handlePostClick = function(post) {
-        vm.selectedPost = post;
-        // Handle showing modal here
+        $location.path('/post/' + post.id);
     };
 
 	vm.prevPage = function() {
@@ -43,7 +60,6 @@ angular.module('app', [])
     };
 
     vm.navigate = function() {
-        // Navigate to '/write'
         $location.path('/write');
     };
 
@@ -71,4 +87,20 @@ angular.module('app', [])
             }
         }
     });
+}])
+.controller('PostDetailController', ['$http', '$routeParams', function($http, $routeParams) {
+    var vm = this;
+
+    vm.post = {};
+
+    vm.fetchPost = function() {
+        $http.get('http://localhost:3001/posts/' + $routeParams.id)
+        .then(function(response) {
+            vm.post = response.data;
+        }, function(error) {
+            console.log('Error fetching post:', error);
+        });
+    };
+
+    vm.fetchPost();
 }]);
