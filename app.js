@@ -1,106 +1,82 @@
-angular.module('app', ['ngRoute'])
+const express = require('express');
+const cors = require('cors');
+const { Pool } = require('pg');
 
-.config(['$routeProvider', function($routeProvider) {
-    $routeProvider
-    .when('/', {
-        templateUrl: 'main.html',
-        controller: 'PostController',
-        controllerAs: 'postCtrl'
-    })
-    .when('/post/:id', {
-        templateUrl: 'postdetail.html',
-        controller: 'PostDetailController',
-        controllerAs: 'postDetailCtrl'
-    })
-    .otherwise({
-        redirectTo: '/'
-    });
-}])
-  
-.controller('PostController', ['$http', '$location', function($http, $location) {
-    var vm = this;
+const app = express();
+const port = 3001;
 
-    vm.posts = [];
-    vm.currentPage = 1;
-    vm.pageSize = 10;
+// PostgreSQL 데이터베이스 연결 설정
+const pool = new Pool({
+  user: 'postgres', // 데이터베이스 사용자 이름
+  host: 'localhost', // 데이터베이스 호스트
+  database: 'HF', // 데이터베이스 이름
+  password: '1234', // 데이터베이스 비밀번호
+  port: 5432, // 데이터베이스 포트 
+});
 
-    vm.fetchPosts = function() {
-        $http.get('http://localhost:3001/posts')
-        .then(function(response) {
-            vm.posts = response.data.sort((a, b) => b.id - a.id);
-        }, function(error) {
-            console.log('Error fetching posts:', error);
-        });
-    };
+app.use(cors());
+app.use(express.json());
 
-    vm.formatDate = function(dateString) {
-        var options = { year: 'numeric', month: 'long', day: 'numeric' };
-        var date = new Date(dateString);
-        return date.toLocaleDateString(undefined, options);
-    };
+// 사용자 조회
+app.get('/api/users', (req, res) => {
+  pool.query('SELECT * FROM users', (err, result) => {
+    if (err) {
+      console.error('Error executing query', err);
+      res.status(500).json({ error: 'An error occurred' });
+    } else {
+      res.json(result.rows);
+    }
+  });
+});
 
-    vm.handlePostClick = function(post) {
-        $location.path('/post/' + post.id);
-    };
+// 사용자 추가
+app.post('/api/users', (req, res) => {
+  const { fName, lName, passw1 } = req.body;
+  pool.query(
+    'INSERT INTO users (first_name, last_name, password) VALUES ($1, $2, $3) RETURNING *',
+    [fName, lName, passw1],
+    (err, result) => {
+      if (err) {
+        console.error('Error executing query', err);
+        res.status(500).json({ error: 'An error occurred' });
+      } else {
+        res.json(result.rows[0]);
+      }
+    }
+  );
+});
 
-	vm.prevPage = function() {
-		if (vm.currentPage > 1) {
-			vm.currentPage--;
-		}
-	};
-	
-	vm.nextPage = function() {
-		if (vm.currentPage < vm.totalPages) {
-			vm.currentPage++;
-		}
-	};	
+// 사용자 업데이트
+app.put('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  const { fName, lName } = req.body;
+  pool.query(
+    'UPDATE users SET first_name = $1, last_name = $2 WHERE id = $3',
+    [fName, lName, userId],
+    (err) => {
+      if (err) {
+        console.error('Error executing query', err);
+        res.status(500).json({ error: 'An error occurred' });
+      } else {
+        res.sendStatus(200);
+      }
+    }
+  );
+});
 
-    vm.goToPage = function(pageNumber) {
-        vm.currentPage = pageNumber;
-    };
+// 사용자 삭제
+app.delete('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  pool.query('DELETE FROM users WHERE id = $1', [userId], (err) => {
+    if (err) {
+      console.error('Error executing query', err);
+      res.status(500).json({ error: 'An error occurred' });
+    } else {
+      res.sendStatus(200);
+    }
+  });
+});
 
-    vm.navigate = function() {
-        $location.path('/write');
-    };
-
-    vm.fetchPosts();
-
-    Object.defineProperties(vm, {
-        totalPages: {
-            get: function() {
-                return Math.ceil(vm.posts.length / vm.pageSize);
-            }
-        },
-        visiblePageNumbers: {
-            get: function() {
-                var currentPageGroup = Math.ceil(vm.currentPage / 10);
-                var startPage = (currentPageGroup - 1) * 10 + 1;
-                var endPage = Math.min(vm.totalPages, currentPageGroup * 10);
-                return Array.from({ length: endPage - startPage + 1 }, (_, i) => i + startPage);
-            }
-        },
-        paginatedPosts: {
-            get: function() {
-                var startIndex = (vm.currentPage - 1) * vm.pageSize;
-                var endIndex = startIndex + vm.pageSize;
-                return vm.posts.slice(startIndex, endIndex);
-            }
-        }
-    });
-}])
-.controller('PostDetailController', ['$http', '$routeParams', function($http, $routeParams) {
-    var vm = this;
-
-    vm.post = {};
-
-    vm.fetchPost = function() {
-        $http.get('http://localhost:3001/posts/' + $routeParams.id)
-        .then(function(response) {
-            vm.post = response.data;
-        }, function(error) {
-            console.log('Error fetching post:', error);
-        });
-    };
-
-    vm.fetchPost();
-}]);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
