@@ -58,7 +58,14 @@ angular.module('myApp', []).controller('userCtrl', function ($scope, $http) {
   $scope.getUsers = function () {
     $http.get('http://localhost:3001/api/users').then(
       function (response) {
-        $scope.users = response.data;
+        $scope.users = response.data.map(user => {
+          return {
+            fName: user.first_name,
+            lName: user.last_name,
+          };
+        });
+
+        console.log($scope.users); // 데이터 확인 로깅
       },
       function (error) {
         console.error('Error fetching users:', error);
