@@ -18,8 +18,8 @@
           <td>
             <button class="w3-btn w3-ripple" ng-click="editUser(user.id)">&#9998; Edit</button>
           </td>
-          <td>{{ user.first_name }}</td>
-          <td>{{ user.last_name }}</td>
+          <td>{{ user.fName }}</td>
+          <td>{{ user.lName }}</td>
         </tr>
       </table>
       <br>
@@ -34,7 +34,7 @@
         <input class="w3-input w3-border" type="text" ng-model="lName" ng-disabled="!edit" placeholder="Last Name">
         <br>
         <label>Password:</label>
-        <input class="w3-input w3-border" type="password" ng-model="passw1" placeholder="Password">
+        <input class="w3-input w3-border" type="password" ng-model="passw1"  placeholder="Password">
         <br>
         <label>Repeat:</label>
         <input class="w3-input w3-border" type="password" ng-model="passw2" placeholder="Repeat Password">

@@ -18,10 +18,13 @@ angular.module('myApp', []).controller('userCtrl', function ($scope, $http) {
       $scope.lName = '';
     } else {
       $scope.edit = false;
-      $scope.fName = $scope.users[id - 1].fName;
-      $scope.lName = $scope.users[id - 1].lName;
+      // id 값 그대로 사용하여 해당 사용자 정보를 가져옴
+      $scope.fName = $scope.users[id].fName;
+      $scope.lName = $scope.users[id].lName;
+      $scope.editUserId = id; // 수정할 사용자 ID 저장 (별도 변수 추가)
     }
   };
+  
 
   $scope.$watch('passw1', function () {
     $scope.test();
@@ -36,35 +39,33 @@ angular.module('myApp', []).controller('userCtrl', function ($scope, $http) {
     $scope.test();
   });
 
-  $scope.test = function () {
-    if ($scope.passw1 !== $scope.passw2) {
+  $scope.test = function() {
+    if($scope.passw1 !== $scope.passw2){
       $scope.error = true;
-    } else {
+    } else{
       $scope.error = false;
     }
-    $scope.incomplete = false;
-    if (
+
+    if(
       $scope.edit &&
       (!$scope.fName.length ||
         !$scope.lName.length ||
         !$scope.passw1.length ||
-        !$scope.passw2.length)
-    ) {
+        !$scope.passw2.length ||
+        $scope.error)
+    ){
       $scope.incomplete = true;
+    } else{
+      $scope.incomplete = false;
     }
-  };
+  }
 
   // 사용자 조회
   $scope.getUsers = function () {
     $http.get('http://localhost:3001/api/users').then(
       function (response) {
-        $scope.users = response.data.map(user => {
-          return {
-            fName: user.first_name,
-            lName: user.last_name,
-          };
-        });
-
+        $scope.users = response.data; // 서버에서 받아온 사용자 리스트를 그대로 사용
+  
         console.log($scope.users); // 데이터 확인 로깅
       },
       function (error) {
@@ -72,6 +73,7 @@ angular.module('myApp', []).controller('userCtrl', function ($scope, $http) {
       }
     );
   };
+  
 
     // 사용자 추가 또는 업데이트 함수
     $scope.saveUser = function () {

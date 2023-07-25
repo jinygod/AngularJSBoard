@@ -50,19 +50,31 @@ app.post('/api/users', (req, res) => {
 app.put('/api/users/:id', (req, res) => {
   const userId = req.params.id;
   const { fName, lName } = req.body;
+
+  // userId가 정상적으로 전달되었는지 확인
+  if (!userId) {
+    res.status(400).json({ error: 'User ID is missing in the request' });
+    return;
+  }
+
+  // 로깅 추가
+  console.log('Received request to update user with ID:', userId);
+
   pool.query(
     'UPDATE users SET first_name = $1, last_name = $2 WHERE id = $3',
     [fName, lName, userId],
     (err) => {
       if (err) {
         console.error('Error executing query', err);
-        res.status(500).json({ error: 'An error occurred' });
+        res.status(500).json({ error: 'An error occurred while updating the user' });
       } else {
         res.sendStatus(200);
       }
     }
   );
 });
+
+
 
 // 사용자 삭제
 app.delete('/api/users/:id', (req, res) => {
